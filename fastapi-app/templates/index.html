@@ -4,16 +4,64 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>To-Do List</title>
+    <style>
+      ul {
+        padding-left: 20px; /* 왼쪽 들여쓰기 설정 */
+        list-style-position: outside; /* 글머리 기호를 li 바깥쪽에 위치 */
+      }
+
+      /* 간격 주기 */
+      li {
+        margin-bottom: 10px;
+      }
+
+      li input,
+      li button {
+        margin-right: 9px; /* 요소 간 간격 */
+      }
+
+      /* 테두리 없애고 좀 더 깔끔하게 */
+      li input {
+        border: none;
+        outline: none;
+        background-color: transparent;
+        font-size: 16px;
+        width: 140px;
+      }
+
+      li input:nth-child(2) {
+        width: 165px; /* 설명(description) 입력창 넓게! */
+      }
+
+      /* 선택됐을 때만 아래 밑줄 효과 */
+      li input:focus {
+        background-color: #d5d5d5e2;
+      }
+
+      /* 공통 버튼 스타일 */
+      button {
+        padding: 6px 12px;
+        font-size: 14px;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+        transition: background-color 0.2s;
+        background-color: #6ac0eb;
+      }
+      button:hover {
+        background-color: #549ec3;
+      }
+    </style>
   </head>
   <body>
     <h1>To-Do List</h1>
     <ul id="todo-list"></ul>
     <form id="todo-form">
-      <input type="text" id="title" placeholder="Title" required />
+      <input type="text" id="title" placeholder="To-do" required />
       <input type="text" id="description" placeholder="Description" required />
-      <button type="submit">Add To-Do</button>
+      <button type="submit">추가</button>
     </form>
-    <script>
+    <!-- <script>
       async function fetchTodos() {
         const response = await fetch("/todos");
         const todos = await response.json();
@@ -67,6 +115,101 @@
       }
 
       fetchTodos();
+    </script> -->
+    <script>
+      async function fetchTodos() {
+        const response = await fetch("/todos");
+        const todos = await response.json();
+        const todoList = document.getElementById("todo-list");
+        todoList.innerHTML = "";
+
+        todos.forEach((todo) => {
+          const li = document.createElement("li");
+
+          // 🔹 수정 가능한 input 필드 생성
+          const titleInput = document.createElement("input");
+          titleInput.type = "text";
+          titleInput.value = todo.title;
+
+          const descInput = document.createElement("input");
+          descInput.type = "text";
+          descInput.value = todo.description;
+
+          // 🔹 수정 버튼
+          const editBtn = document.createElement("button");
+          editBtn.textContent = "수정";
+          editBtn.onclick = async () => {
+            const updatedTitle = titleInput.value;
+            const updatedDesc = descInput.value;
+
+            const response = await fetch(`/todos/${todo.id}`, {
+              method: "PUT",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({
+                id: todo.id,
+                title: updatedTitle,
+                description: updatedDesc,
+                completed: todo.completed,
+              }),
+            });
+
+            if (response.ok) {
+              fetchTodos(); // 수정 후 목록 새로고침
+            }
+          };
+
+          // 🔹 삭제 버튼
+          const deleteBtn = document.createElement("button");
+          deleteBtn.textContent = "삭제";
+          deleteBtn.onclick = async () => {
+            const response = await fetch(`/todos/${todo.id}`, {
+              method: "DELETE",
+            });
+            if (response.ok) {
+              fetchTodos(); // 삭제 후 목록 새로고침
+            }
+          };
+
+          // 🔹 li 구성
+          li.appendChild(titleInput);
+          li.appendChild(descInput);
+          li.appendChild(editBtn);
+          li.appendChild(deleteBtn);
+          todoList.appendChild(li);
+        });
+      }
+
+      // 🔸 할 일 추가
+      document
+        .getElementById("todo-form")
+        .addEventListener("submit", async (event) => {
+          event.preventDefault();
+          const title = document.getElementById("title").value;
+          const description = document.getElementById("description").value;
+
+          const response = await fetch("/todos", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              id: Date.now(),
+              title,
+              description,
+              completed: false,
+            }),
+          });
+
+          if (response.ok) {
+            document.getElementById("title").value = "";
+            document.getElementById("description").value = "";
+            fetchTodos();
+          }
+        });
+
+      fetchTodos(); // 페이지 로딩 시 목록 불러오기
     </script>
   </body>
 </html>
