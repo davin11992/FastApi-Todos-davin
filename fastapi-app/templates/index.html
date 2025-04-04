@@ -5,9 +5,25 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>To-Do List</title>
     <style>
+      body {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        height: 100vh;
+        margin: 0;
+      }
+
+      h1 {
+        background-color: #457ac9;
+        color: white;
+        margin-bottom: 20px;
+        padding: 10px 20px;
+        border-radius: 8px;
+        text-align: center;
+      }
       ul {
-        padding-left: 20px; /* 왼쪽 들여쓰기 설정 */
-        list-style-position: outside; /* 글머리 기호를 li 바깥쪽에 위치 */
+        padding-left: 20px;
+        list-style-position: outside;
       }
 
       /* 간격 주기 */
@@ -30,7 +46,7 @@
       }
 
       li input:nth-child(2) {
-        width: 165px; /* 설명(description) 입력창 넓게! */
+        width: 165px;
       }
 
       /* 선택됐을 때만 아래 밑줄 효과 */
