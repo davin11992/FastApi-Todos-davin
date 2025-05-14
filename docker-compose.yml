@@ -48,7 +48,7 @@ services:
     ports:
       - "7100:9100"
 
-    cadvisor:
+  cadvisor:
     image: gcr.io/cadvisor/cadvisor:latest
     container_name: cadvisor
     ports:
