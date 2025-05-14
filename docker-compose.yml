@@ -48,6 +48,20 @@ services:
     ports:
       - "7100:9100"
 
+    cadvisor:
+    image: gcr.io/cadvisor/cadvisor:latest
+    container_name: cadvisor
+    ports:
+      - "8081:8080"
+    volumes:
+      - /:/rootfs:ro
+      - /var/run:/var/run:ro
+      - /sys:/sys:ro
+      - /var/lib/docker/:/var/lib/docker:ro
+    command:
+      - "--prometheus_endpoint=/metrics"
+    restart: unless-stopped
+
 volumes:
   sonarqube_conf:
   sonarqube_data:
