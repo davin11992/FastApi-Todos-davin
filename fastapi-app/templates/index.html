@@ -138,61 +138,6 @@
       <input type="text" id="description" placeholder="Description" required />
       <button type="submit">추가</button>
     </form>
-    <!-- <script>
-      async function fetchTodos() {
-        const response = await fetch("/todos");
-        const todos = await response.json();
-        const todoList = document.getElementById("todo-list");
-        todoList.innerHTML = "";
-        todos.forEach((todo) => {
-          const li = document.createElement("li");
-          // li.textContent = `${todo.title}: ${todo.description}`;
-          li.innerHTML = `
-            <span>${todo.title}: ${todo.description}</span>
-            <button onclick="deleteTodo(${todo.id})">삭제</button>
-          `;
-          todoList.appendChild(li);
-        });
-      }
-
-      document
-        .getElementById("todo-form")
-        .addEventListener("submit", async (event) => {
-          event.preventDefault();
-          const title = document.getElementById("title").value;
-          const description = document.getElementById("description").value;
-          const response = await fetch("/todos", {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-              id: Date.now(),
-              title,
-              description,
-              completed: false,
-            }),
-          });
-          if (response.ok) {
-            document.getElementById("title").value = "";
-            document.getElementById("description").value = "";
-            fetchTodos();
-          }
-        });
-
-      // To-Do 삭제 기능
-      async function deleteTodo(todoId) {
-        const response = await fetch(`/todos/${todoId}`, {
-          method: "DELETE",
-        });
-
-        if (response.ok) {
-          fetchTodos(); // 삭제 후 목록 새로고침
-        }
-      }
-
-      fetchTodos();
-    </script> -->
     <script>
       async function fetchTodos() {
         const response = await fetch("/todos");
@@ -282,6 +227,7 @@
           if (response.ok) {
             document.getElementById("title").value = "";
             document.getElementById("description").value = "";
+            document.getElementById("title").focus();
             fetchTodos();
           }
         });
