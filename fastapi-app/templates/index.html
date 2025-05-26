@@ -145,6 +145,24 @@
         const todoList = document.getElementById("todo-list");
         todoList.innerHTML = "";
 
+        if (todos.length === 0) {
+          todoList.innerHTML = `
+  <li style="
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 50px;
+    width: 100%;
+    font-size: 19px;
+    background-color: #f2f2f2;
+    border-radius: 8px;
+  ">
+    할 일이 없습니다. 할 일을 추가해주세요!
+  </li>
+`;
+          return;
+        }
+
         todos.forEach((todo) => {
           const li = document.createElement("li");
 
