@@ -163,8 +163,16 @@
           return;
         }
 
-        todos.forEach((todo) => {
+        todos.forEach((todo, index) => {
           const li = document.createElement("li");
+
+          // 번호를 나타낼 span 요소
+          const numberSpan = document.createElement("span");
+          numberSpan.textContent = `${index + 1}.`;
+          numberSpan.style.marginRight = "10px";
+          numberSpan.style.fontWeight = "bold";
+          numberSpan.style.width = "30px";
+          numberSpan.style.display = "inline-block";
 
           // 🔹 수정 가능한 input 필드 생성
           const titleInput = document.createElement("input");
@@ -213,6 +221,7 @@
           };
 
           // 🔹 li 구성
+          li.appendChild(numberSpan);
           li.appendChild(titleInput);
           li.appendChild(descInput);
           li.appendChild(editBtn);
