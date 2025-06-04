@@ -12,6 +12,8 @@ services:
       - loki
     environment:
       - LOKI_ENDPOINT=http://loki:3100/loki/api/v1/push
+    networks:
+      - loadtest-net
 
   jmeter:
     build:
