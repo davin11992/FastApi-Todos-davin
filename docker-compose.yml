@@ -14,8 +14,6 @@ services:
       - LOKI_ENDPOINT=http://loki:3100/loki/api/v1/push
     networks:
       - loadtest-net
-    depends_on:
-      -loki
 
   # jmeter:
   #   build:
