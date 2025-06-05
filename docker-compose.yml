@@ -12,8 +12,6 @@ services:
       - loki
     environment:
       - LOKI_ENDPOINT=http://loki:3100/loki/api/v1/push
-    networks:
-      - loadtest-net
 
   # jmeter:
   #   build:
@@ -79,6 +77,8 @@ services:
     container_name: loki
     ports:
       - "3100:3100"
+    networks:
+      - loadtest-net
 
   cadvisor:
     image: gcr.io/cadvisor/cadvisor:latest
