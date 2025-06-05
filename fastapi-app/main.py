@@ -108,3 +108,103 @@
 #         content = file.read()
 #     return HTMLResponse(content=content)
 
+from fastapi import FastAPI, HTTPException, Request
+from fastapi.responses import HTMLResponse
+from pydantic import BaseModel
+from prometheus_fastapi_instrumentator import Instrumentator
+from logging_loki import LokiQueueHandler
+from logging.handlers import QueueListener
+from multiprocessing import Queue
+import json
+import os
+import logging
+import time
+
+app = FastAPI()
+
+# Prometheus 메트릭스 엔드포인트 (/metrics)
+Instrumentator().instrument(app).expose(app, endpoint="/metrics")
+
+# Loki 로그 핸들러 설정
+queue = Queue(-1)
+loki_logs_handler = LokiQueueHandler(
+    queue,
+    url=os.getenv("LOKI_ENDPOINT"),
+    tags={"application": "fastapi"},
+    version="1",
+)
+
+custom_logger = logging.getLogger("custom.access")
+custom_logger.setLevel(logging.INFO)
+custom_logger.addHandler(loki_logs_handler)  # ✅ 수정됨
+
+listener = QueueListener(queue, loki_logs_handler.handler)  # ✅ 수정됨
+listener.start()
+
+custom_logger.info("✅ FastAPI 서버가 시작되었고, Loki로 로그 전송을 시도합니다.")
+
+# 미들웨어
+@app.middleware("http")
+async def log_requests(request: Request, call_next):
+    start_time = time.time()
+    response = await call_next(request)
+    duration = time.time() - start_time
+    log_message = (
+        f'{request.client.host} - "{request.method} {request.url.path} HTTP/1.1" '
+        f'{response.status_code} {duration:.3f}s'
+    )
+    custom_logger.info(log_message)
+    return response
+
+# ----------------- 이하 동일 -----------------
+
+class TodoItem(BaseModel):
+    id: int
+    title: str
+    description: str
+    completed: bool
+
+TODO_FILE = "todo.json"
+
+def load_todos():
+    if os.path.exists(TODO_FILE):
+        with open(TODO_FILE, "r") as file:
+            return json.load(file)
+    return []
+
+def save_todos(todos):
+    with open(TODO_FILE, "w") as file:
+        json.dump(todos, file, indent=4)
+
+@app.get("/todos", response_model=list[TodoItem])
+def get_todos():
+    return load_todos()
+
+@app.post("/todos", response_model=TodoItem)
+def create_todo(todo: TodoItem):
+    todos = load_todos()
+    todos.append(todo.dict())
+    save_todos(todos)
+    return todo
+
+@app.put("/todos/{todo_id}", response_model=TodoItem)
+def update_todo(todo_id: int, updated_todo: TodoItem):
+    todos = load_todos()
+    for todo in todos:
+        if todo["id"] == todo_id:
+            todo.update(updated_todo.dict())
+            save_todos(todos)
+            return updated_todo
+    raise HTTPException(status_code=404, detail="To-Do item not found")
+
+@app.delete("/todos/{todo_id}", response_model=dict)
+def delete_todo(todo_id: int):
+    todos = load_todos()
+    todos = [todo for todo in todos if todo["id"] != todo_id]
+    save_todos(todos)
+    return {"message": "To-Do item deleted"}
+
+@app.get("/", response_class=HTMLResponse)
+def read_root():
+    with open("templates/index.html", "r", encoding="utf-8") as file:
+        return HTMLResponse(content=file.read())
